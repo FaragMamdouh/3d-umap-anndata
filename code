@@ -1,0 +1,78 @@
+
+import scanpy as sc
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+# -----------------------------
+# 1) Compute 3D UMAP
+# -----------------------------
+sc.tl.umap(adata2, n_components=3)
+adata2.obsm['X_umap3'] = adata2.obsm['X_umap']
+
+# -----------------------------
+# 2) Prepare DataFrame
+# -----------------------------
+coords = adata2.obsm['X_umap3']
+df = pd.DataFrame(coords, columns=['UMAP1', 'UMAP2', 'UMAP3'], index=adata2.obs_names)
+
+# metadata
+df['celltype'] = adata2.obs['celltype']
+
+# optional hover gene
+if 'geneA' in adata2.obs.columns:
+    df['geneA'] = adata2.obs['geneA']
+else:
+    df['geneA'] = ''
+
+# -----------------------------
+# 3) Compute cluster centroids
+# -----------------------------
+centroids = (
+    df.groupby('celltype')[['UMAP1', 'UMAP2', 'UMAP3']]
+      .mean()
+      .reset_index()
+)
+
+# -----------------------------
+# 4) Plot 3D UMAP
+# -----------------------------
+fig = px.scatter_3d(
+    df,
+    x='UMAP1',
+    y='UMAP2',
+    z='UMAP3',
+    color='celltype',
+    hover_name=df.index,
+    hover_data=['geneA']
+)
+
+fig.update_traces(marker=dict(size=3))
+
+# -----------------------------
+# 5) Add celltype labels
+# -----------------------------
+fig.add_trace(
+    go.Scatter3d(
+        x=centroids['UMAP1'],
+        y=centroids['UMAP2'],
+        z=centroids['UMAP3'],
+        mode='text',
+        text=centroids['celltype'],
+        textposition='middle center',
+        textfont=dict(size=14, color='black'),
+        showlegend=False
+    )
+)
+
+# -----------------------------
+# 6) Layout + show + save
+# -----------------------------
+fig.update_layout(
+    scene=dict(aspectmode='auto'),
+    margin=dict(l=0, r=0, b=0, t=30)
+)
+
+fig.show()
+fig.write_html('umap3d_celltype_labeled.html', include_plotlyjs='cdn')
+
