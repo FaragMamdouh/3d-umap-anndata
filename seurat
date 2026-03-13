@@ -1,0 +1,26 @@
+p <- plot_ly(
+  df,
+  x = ~UMAP1,
+  y = ~UMAP2,
+  z = ~UMAP3,
+  type = "scatter3d",
+  mode = "markers",
+  color = ~celltype,
+  colors = my_colors,
+  marker = list(size = 2)
+)
+
+p <- add_trace(
+  p,
+  data = centers,
+  x = ~UMAP1,
+  y = ~UMAP2,
+  z = ~UMAP3,
+  type = "scatter3d",
+  mode = "text",
+  text = ~celltype,
+  textfont = list(size = 14, color = "black"),
+  showlegend = FALSE
+)
+
+p
