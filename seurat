@@ -1,3 +1,34 @@
+DefaultAssay(Thymus2) = "SCT"
+Thymus2 <- RunUMAP(
+  Thymus2,
+  dims = 1:20,
+  n.components = 3,
+  reduction.name = "umap3d",
+  reduction.key = "UMAP3D_"
+)
+
+# extract embeddings
+emb <- Embeddings(Thymus2, "umap3d")
+
+my_colors <- c("#264653", "#2A9D8F", "#8AB17D", "#E9C46A",
+               "#F4A261", "#E76F51", "#CDB4DB")
+
+emb <- Embeddings(Thymus2, "umap3d")
+Idents(Thymus2) <- "SCT_snn_res.0.5"
+
+df <- data.frame(
+  UMAP1 = emb[,1],
+  UMAP2 = emb[,2],
+  UMAP3 = emb[,3],
+  celltype = Idents(Thymus2)
+)
+centers <- df %>%
+  group_by(celltype) %>%
+  summarise(
+    UMAP1 = mean(UMAP1),
+    UMAP2 = mean(UMAP2),
+    UMAP3 = mean(UMAP3)
+  )
 p <- plot_ly(
   df,
   x = ~UMAP1,
