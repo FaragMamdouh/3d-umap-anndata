@@ -1,26 +1,35 @@
-DefaultAssay(Thymus2) = "SCT"
-Thymus2 <- RunUMAP(
-  Thymus2,
-  dims = 1:20,
+DefaultAssay(filltered2) = "integrated"
+filltered2 <- RunUMAP(
+  filltered2,
+  dims = 1:30,
   n.components = 3,
   reduction.name = "umap3d",
   reduction.key = "UMAP3D_"
 )
 
 # extract embeddings
-emb <- Embeddings(Thymus2, "umap3d")
+emb <- Embeddings(filltered2, "umap3d")
 
-my_colors <- c("#264653", "#2A9D8F", "#8AB17D", "#E9C46A",
-               "#F4A261", "#E76F51", "#CDB4DB")
 
-emb <- Embeddings(Thymus2, "umap3d")
-Idents(Thymus2) <- "SCT_snn_res.0.5"
+cluster_colors <- c(
+  "5" = "#E76F51", 
+  "7" = "#6D6875",
+  "6" = "#CDB4DB",
+  "3" = "#E9C46A", 
+  "1" = "#2A9D8F",
+  "2" = "#8AB17D",
+  "0" = "#264653", 
+  "4" = "#F4A261"
+)
+
+emb <- Embeddings(filltered2, "umap3d")
+Idents(filltered2) = "integrated_snn_res.0.5"
 
 df <- data.frame(
   UMAP1 = emb[,1],
   UMAP2 = emb[,2],
   UMAP3 = emb[,3],
-  celltype = Idents(Thymus2)
+  celltype = Idents(filltered2)
 )
 centers <- df %>%
   group_by(celltype) %>%
@@ -37,7 +46,7 @@ p <- plot_ly(
   type = "scatter3d",
   mode = "markers",
   color = ~celltype,
-  colors = my_colors,
+  colors = cluster_colors,
   marker = list(size = 2)
 )
 
@@ -55,3 +64,12 @@ p <- add_trace(
 )
 
 p
+library(htmlwidgets)
+
+saveWidget(
+  widget = p,
+  file = "umap3d.html",
+  selfcontained = TRUE
+)
+setwd("/Volumes/BCP-ALL/Normal Dataset/thymus/our dataset/Thymus/Thymus integrated")
+
